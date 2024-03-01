@@ -1,32 +1,36 @@
 'use client'
 
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import Link from "next/link"
 import { useForm } from "react-hook-form"
 
-import { signIn } from "next-auth/react"
 import { toast } from "@/components/ui/use-toast"
+import { signIn } from "next-auth/react"
+import { useState } from 'react'; // Importe useState do React
 
 
 export function AuthForm() {
     const form = useForm()
+    const [loading, setLoading] = useState(false); // Adicione o estado de loading
 
     const handleSubmit = form.handleSubmit(async (data) => {
+      setLoading(true); // Inicie o loading antes do signIn
       try {
         await signIn('email', { email: data.email, redirect: false })
         toast({
           title: 'Check your email',
           description: 'We sent a magic link to your email',
-          duration: 5000,
         })
       } catch (error) {
         console.log(error);
         toast({
           title: 'Error',
           description: (error as any).message,
-          duration: 5000,
         })
+      } finally {
+        setLoading(false); // Finalize o loading após o signIn, independentemente do resultado
       }
     })
 
@@ -41,9 +45,14 @@ export function AuthForm() {
           <Label htmlFor="email">Email</Label>
           <Input id="email" placeholder="m@example.com" required type="email" {... form.register('email')}/>
         </div>
-        <Button className="w-full" type="submit">
-          Send Magic Link
-        </Button>
+        <Button className="w-full" type="submit" disabled={loading}>
+            {loading ? 'Loading...' : 'Send Magic Link'}
+          </Button>
+        <div className="text-center">
+          <Link className="text-gray-500 dark:text-gray-400 hover:underline" href="/">
+            Go back to the main page
+          </Link>
+        </div>
       </form>
     </div>
   )
